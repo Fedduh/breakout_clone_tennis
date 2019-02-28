@@ -1,0 +1,11 @@
+  // Key events
+  addEventListener("keydown",function(e) {
+    switch(e.key) {
+      case "ArrowLeft": 
+      paddle.x = {paddle.x = (paddle.x <= 5 ? 5 : paddle.x - paddle.speed); }
+      break;
+    case "ArrowRight": 
+      paddle.x = (paddle.x + paddle.width >= 495 ? 495 - paddle.width : paddle.x + paddle.speed); 
+      break;
+    };
+  });

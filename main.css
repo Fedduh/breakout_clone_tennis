@@ -1,0 +1,23 @@
+#explanation {
+  padding: 30px;
+  float: right;
+}
+
+#canvasBoard {
+  border: 1px solid black;
+  float: left;
+  margin-right: 20px;
+}
+
+.container {
+  margin: 0 auto;
+  margin-top: 50px;
+  width: 800px;
+  /* border: 1px solid orange; */
+}
+
+#startButton{
+  padding: 10px;
+  background: rgba(235, 222, 43, 0.774);
+  border: 1px solid orange;
+}
