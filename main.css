@@ -4,7 +4,7 @@
 }
 
 #canvasBoard {
-  border: 1px solid black;
+  border: 2px solid grey;
   float: left;
   margin-right: 20px;
 }

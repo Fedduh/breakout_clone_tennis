@@ -22,3 +22,11 @@
     ball.speedY *= -1;
     ball.speedX *= -1;
   }
+
+  // collission
+  https://stackoverflow.com/questions/47265857/rectangle-and-circle-resolve-collision
+
+  https://stackoverflow.com/questions/21089959/detecting-collision-of-rectangle-with-circle
+
+  // border around rectangle
+  http://jsfiddle.net/robhawkes/gHCJt/

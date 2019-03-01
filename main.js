@@ -5,6 +5,7 @@ var paddle, board, ballArray, ball, framerate;
 var goLeft = false;
 var goRight = false;
 
+
 $("document").ready(function () {
 
   // ---------------
@@ -12,6 +13,7 @@ $("document").ready(function () {
   var canvas = document.getElementById("canvasBoard");
   var ctx = document.getElementById("canvasBoard").getContext("2d");
   var ballArray = [];
+
 
   // Board constructor
   function Board() {
@@ -32,20 +34,23 @@ $("document").ready(function () {
     this.y = 480;
     this.speed = 5;
     this.draw = function () {
-      ctx.fillStyle = "black";
+      ctx.fillStyle = "grey";
       ctx.fillRect(this.x, this.y, this.width, this.height);
+      ctx.fillStyle = "blue";
+      ctx.fillRect(this.x + 5, this.y + 1, this.width - 10, this.height - 2);
     }
   };
 
   // Ball constructor
   function Ball() {
     this.x = board.width / 2;
-    this.y = 200;
-    this.radius = 15;
+    this.y = 160;
+    this.radius = 10;
     this.speedX = -2;
     this.speedY = 2;
+    this.speedStatus = true;
     this.draw = function () {
-      ctx.fillStyle = "green";
+      ctx.fillStyle = "grey";
       ctx.beginPath();
       ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
       ctx.fill();
@@ -54,16 +59,36 @@ $("document").ready(function () {
     ballArray.push(this);
   };
 
-  function Block(x, y) {
+  function Block(x, y, health) {
     this.x = x;
     this.y = y;
-    this.width = 40;
-    this.height = 15;
+    this.width = 40; // 40
+    this.height = 15; // 15
+    this.health = health;
     this.draw = function () {
-      ctx.fillStyle = "red";
+      ctx.strokeRect(this.x-1, this.y-1, this.width + 2, this.height + 2);
+      switch (this.health) {
+        case 1: ctx.fillStyle = "green";
+          var my_gradient = ctx.createLinearGradient(this.x, this.y, this.x, this.y + this.height);
+          my_gradient.addColorStop(0, "#0DCC1E");
+          my_gradient.addColorStop(1, "green");
+          ctx.fillStyle = my_gradient;
+          break;
+        case 2: ctx.fillStyle = "yellow";
+          var my_gradient = ctx.createLinearGradient(this.x, this.y, this.x, this.y + this.height);
+          my_gradient.addColorStop(0, "#CC7D34");
+          my_gradient.addColorStop(1, "yellow");
+          ctx.fillStyle = my_gradient;
+          break;
+        case 3: // ctx.fillStyle = my_gradient;
+          var my_gradient = ctx.createLinearGradient(this.x, this.y, this.x, this.y + this.height);
+          my_gradient.addColorStop(0, "#FF532A");
+          my_gradient.addColorStop(1, "red");
+          ctx.fillStyle = my_gradient;
+          break;
+      }
       ctx.fillRect(this.x, this.y, this.width, this.height);
     }
-
   };
 
   var blockArray = [];
@@ -72,7 +97,8 @@ $("document").ready(function () {
     for (var j = 1; j < 5; j++) { // 4 high
       var x = 30;
       for (var i = 0; i < 7; i++) { // 7 wide
-        var block = new Block(x, 25 * j);
+        var health = Math.floor(Math.random() * 3 + 1); // 1, 2, 3
+        var block = new Block(x, 25 * j, health);
         blockArray.push(block);
         x = x + 50;
       }
@@ -82,7 +108,7 @@ $("document").ready(function () {
   createBlocks();
 
   // function testBlock() {
-  //   var block = new Block(50, 50);
+  //   var block = new Block(150, 150);
   //   blockArray.push(block);
   // }
   // testBlock();
@@ -120,9 +146,9 @@ $("document").ready(function () {
     })
     // balls collission
     ballArray.forEach(function (ball) {
-      // hitting left / right
+      // hitting left / right border
       if (ball.x + ball.radius >= board.width || ball.x - ball.radius <= board.x) { ball.speedX *= -1 };
-      // hitting top 
+      // hitting top  border
       if (ball.y - ball.radius <= board.y) { ball.speedY *= -1 };
       // hitting paddle
       if (ball.y + ball.radius >= paddle.y
@@ -135,26 +161,72 @@ $("document").ready(function () {
       };
       // hitting blocks
       blockArray.forEach(function (block) {
-        // colisson from below
-        if (ball.y + ball.radius >= block.y
-          && ball.y - ball.radius <= block.y + block.height
-          && ball.x - ball.radius >= block.x - (ball.radius * 2)
-          && ball.x + ball.radius <= (block.x + block.width + (ball.radius * 2))
-        ) {
-          // shatter block 
-          console.log("boom"); 
-          ball.speedY *= -1;
-          ball.speedX *= -1;
+        if (RectCircleColliding(ball, block) && ball.speedStatus == true) {
+          explodeBlock(block);
+          if (ball.x - ball.radius >= block.x + block.width - 5 || ball.x + ball.radius <= block.x + 5) {
+            ball.speedX *= -1; //hit detected on left/right...change left/right direction
+            console.log("hit left / right");
+          } else {
+            ball.speedY *= -1; //hit detected on top/bottom...change top/bottom direction
+            console.log("hit top / bottom");
+          };
+          // speedStatus is needed for when ball hits a block on a corner. Otherwise it will trigger many speedX *= -1 events
+          ball.speedStatus = false;
+          setTimeout(function () {
+            ball.speedStatus = true;
+            console.log("reset")
+          }, 20);
         }
+
       });
-      // move ball
-      ball.x += ball.speedX;
-      ball.y += ball.speedY;
-      ball.draw();
+
     });
+    // move ball
+    ball.x += ball.speedX;
+    ball.y += ball.speedY;
+    ball.draw();
+
 
     requestAnimationFrame(updateCanvas);
   };
+
+  // COLLISION
+  // return true if the rectangle and circle are colliding
+  function RectCircleColliding(ball, block) {
+    var distX = Math.abs(ball.x - block.x - block.width / 2);
+    var distY = Math.abs(ball.y - block.y - block.height / 2);
+
+    if (distX > (block.width / 2 + ball.radius)) { return false; }
+    if (distY > (block.height / 2 + ball.radius)) { return false; }
+
+    if (distX <= (block.width / 2)) { return true; }
+    if (distY <= (block.height / 2)) { return true; }
+
+    var dx = distX - block.width / 2;
+    var dy = distY - block.height / 2;
+    return (dx * dx + dy * dy <= (ball.radius * ball.radius));
+
+  };
+
+  // ----------------------
+  // Explode block when hit
+  function explodeBlock(block) {
+    console.table(block);
+    block.health -= 1;
+    console.table(block);
+    if (block.health == 0) {
+      blockArray.splice(blockArray.indexOf(block), 1);
+      // animate explosion confetti
+      confetti(block.x + block.width / 2, block.y + block.height / 2);
+    };
+  }
+
+  // ------------------
+  // Confetti animation
+  function confetti(blockX, blockY) {
+    //
+  }
+
 
   // -----------------
   // Start game trigger
