@@ -1,13 +1,35 @@
 "use strict";
 
 // global variables
-var paddle, board, ballArray, ball, ball2, framerate;
+var paddle, board, ballArray, ball, ball2, blockArray, framerate, score, run, gameover;
 var goLeft = false;
 var goRight = false;
+// var audio = new Audio();
+// audio.src = "sounds/108934__soundcollectah__bottle-ping.aiff";
+
+
 
 
 $("document").ready(function () {
 
+  // function Sound(src) {
+  //   this.sound = document.createElement("audio");
+  //   this.sound.src = src;
+  //   this.sound.setAttribute("preload", "auto");
+  //   this.sound.setAttribute("controls", "none");
+  //   this.sound.style.display = "none";
+  //   document.body.appendChild(this.sound);
+  //   this.crossOrigin="anonymous"
+  //   this.play = function(){
+  //     this.sound.play();
+  //   }
+  //   this.stop = function(){
+  //     this.sound.pause();
+  //   }
+  // };
+  
+  // var soundPaddle = new Sound("sounds/108934__soundcollectah__bottle-ping.aiff");
+  // console.log(soundPaddle);
   // ---------------
   // Assets 
   var canvas = document.getElementById("canvasBoard");
@@ -36,7 +58,7 @@ $("document").ready(function () {
     this.draw = function () {
       ctx.fillStyle = "grey";
       ctx.fillRect(this.x, this.y, this.width, this.height);
-      ctx.fillStyle = "blue";
+      ctx.fillStyle = "black";
       ctx.fillRect(this.x + 5, this.y + 1, this.width - 10, this.height - 2);
     }
   };
@@ -60,10 +82,11 @@ $("document").ready(function () {
     ballArray.push(this);
   };
 
+  
   function Block(x, y, health) {
     this.x = x;
     this.y = y;
-    this.width = 40; // 40
+    this.width = 50; // 40
     this.height = 15; // 15
     this.health = health;
     this.draw = function () {
@@ -89,25 +112,33 @@ $("document").ready(function () {
           break;
       }
       ctx.fillRect(this.x, this.y, this.width, this.height);
+      // overlay for glass effect
+      var glass_gradient = ctx.createLinearGradient(this.x, this.y, this.x, this.y + this.height / 2);
+      glass_gradient.addColorStop(0, "rgba(255,255,255,0.7)");
+      glass_gradient.addColorStop(0, "rgba(255,255,255,0.2)"); 
+      ctx.fillStyle = glass_gradient;
+      ctx.fillRect(this.x, this.y + 2, this.width - 6, this.height / 2);
     }
     blockArray.push(this);
   };
 
-  var blockArray = [];
 
   function createBlocks() {
-    for (var j = 1; j < 5; j++) { // 4 high
+    blockArray = [];
+    for (var j = 1; j < 6; j++) { // 4 high
       var x = 30;
-      for (var i = 0; i < 7; i++) { // 7 wide
-        var health = Math.floor(Math.random() * 3 + 1); // 1, 2, 3
-        var block = new Block(x, 25 * j, health);
+      for (var i = 0; i < 6; i++) { // 6 wide
+        var health = Math.floor(Math.random() * 4); // 1, 2, 3
+        if(health > 0) {
+        new Block(x, 25 * j, health);
+        }
         // blockArray.push(block);
-        x = x + 50;
+        x = x + 60;
       }
     }
   };
 
-  createBlocks();
+
 
   // function testBlock() {
   //   var block = new Block(150, 150);
@@ -122,15 +153,20 @@ $("document").ready(function () {
   // -----------
   // Start game
   function startGame() {
+    cancelAnimationFrame(run); // stop current updateAnimationFrame (if a game was already active) 
+    gameover = false;
     board = new Board(); // update global var 
     ctx.fillStyle = "white";
     ctx.fillRect(0, 0, board.width, board.height);
+    score = 0;
+    drawScore();
     paddle = new Paddle(); // update global var
+    ballArray = [];
     ball = new Ball(2, 2); // update global var 
-    // ball2 = new Ball(1, 4); // update global var 
-    framerate = 0; // update global var
-    // console.table(ballArray);
-    requestAnimationFrame(updateCanvas)
+    ball2 = new Ball(1, 3); // update global var 
+    createBlocks();
+    framerate = 0; // update global var 
+    requestAnimationFrame(updateCanvas);
   };
 
   // ------------------
@@ -147,41 +183,46 @@ $("document").ready(function () {
     blockArray.forEach(function (block) {
       block.draw();
     })
+
     // balls collission
     ballArray.forEach(function (ball) {
       // hitting left / right border
       if (ball.x + ball.radius > board.width || ball.x - ball.radius < board.x) { ball.speedX *= -1 };
       // hitting top  border
       if (ball.y - ball.radius <= board.y) { ball.speedY *= -1 };
+      // hitting bottom (remove ball / game over)
+      if (ball.y - ball.radius >= board.height) {
+        ballArray.splice(ballArray.indexOf(ball), 1); 
+        gameOver();
+      };
       // hitting paddle
       if (ball.y + ball.radius >= paddle.y
         && ball.y + ball.radius <= paddle.y + 5 //paddle.height
         && ball.x - ball.radius >= paddle.x - (ball.radius * 2)
         && ball.x + ball.radius <= paddle.x + paddle.width + (ball.radius * 2)
       ) {
-        var diff = Math.abs(ball.x - (paddle.x + paddle.width / 2));
-        var paddleXx = (paddle.x + paddle.width / 2);
-        var test = Math.abs(paddleXx - ball.x);
-        console.log("test x ball - paddle mid = " + test);
-        var test2 = test / (paddle.width / 2);
-        console.log("test2 = " + test2);
-        // ball.speedY *= -1;
-        if (ball.x > paddle.x + (paddle.width / 2)) { // right
-          // ball.speedX = 2 * ball.multiplier;
-          ball.speedX = (0.2 + (test2 * 2.2)) * ball.multiplier;
-          ball.speedY = (-4 + (test2 * 2.2)) * ball.multiplier;
-          
-        } else { //left  
-          ball.speedX = -0.2 - (test2 * 2.2) * ball.multiplier;
-          ball.speedY = (-4 + (test2 * 2.2)) * ball.multiplier;
+        // soundPaddle.play();
+        // Variables for setting the paddle physics
+        var paddleMidX = paddle.x + paddle.width / 2;
+        var diffPaddleBall = Math.abs(paddleMidX - ball.x);
+        var diffPercent = diffPaddleBall / (paddle.width / 2);
+        // Determine physics for paddle
+        // right hit
+        if (ball.x > paddle.x + (paddle.width / 2)) {
+          ball.speedX = (0.2 + (diffPercent * 2.2)) * ball.multiplier;
+        } else {
+          // left hit
+          ball.speedX = -0.2 - (diffPercent * 2.2) * ball.multiplier;
         };
-        console.table(ball);
-        // ball.speedY *= -1 * (((ball.x - paddle.x) / paddle.width) * 0.2 + 0.25)
+        ball.speedY = (-4 + (diffPercent * 2.2)) * ball.multiplier;
       };
+
       // hitting blocks
       blockArray.forEach(function (block) {
         if (rectCircleColliding(ball, block) && ball.speedStatus == true) {
           explodeBlock(block);
+          score++;
+          drawScore();
           if (ball.x - ball.radius >= block.x + block.width - 5 || ball.x + ball.radius <= block.x + 5) {
             ball.speedX *= -1; //hit from left/right
             // console.log("hit left / right");
@@ -194,7 +235,7 @@ $("document").ready(function () {
           setTimeout(function () {
             ball.speedStatus = true;
             console.log("reset")
-          }, 48);
+          }, 40);
         }
 
       });
@@ -205,8 +246,9 @@ $("document").ready(function () {
       ball.draw();
     });
 
-
-    requestAnimationFrame(updateCanvas);
+    if (!gameover) {
+      run = requestAnimationFrame(updateCanvas);
+    }
   };
 
   // COLLISION
@@ -246,6 +288,26 @@ $("document").ready(function () {
     //
   }
 
+  // -----------
+  // Score
+  function drawScore() {
+    $("#points").text(score);
+  };
+
+  // ---------------
+  // Check game over
+  function gameOver() {
+    if (ballArray.length == 0) { 
+      gameover = true; 
+      ctx.fillStyle = "white";
+      ctx.fillRect(50, 50, board.width - 100, board.height - 100);
+      ctx.fillStyle = "black";
+      ctx.font = "30px Arial"
+      ctx.textAlign = "center";
+      ctx.fillText("Game Over", board.width / 2, board.height / 2);
+      ctx.fillText("Score : " + score, board.width / 2, board.height / 2 + 50);
+    }
+  };
 
   // -----------------
   // Start game trigger

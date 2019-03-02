@@ -1,18 +1,21 @@
 #explanation {
-  padding: 30px;
-  float: right;
+  padding: 30px; 
+}
+
+#board {
+  margin-left: 20px;
 }
 
 #canvasBoard {
-  border: 2px solid grey;
-  float: left;
-  margin-right: 20px;
+  border: 2px solid grey;  
 }
 
 .container {
   margin: 0 auto;
   margin-top: 50px;
   width: 800px;
+  display: flex;
+  justify-content: center;
   /* border: 1px solid orange; */
 }
 
