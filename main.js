@@ -1,7 +1,7 @@
 "use strict";
 
 // global variables
-var paddle, board, ballArray, ball, framerate;
+var paddle, board, ballArray, ball, ball2, framerate;
 var goLeft = false;
 var goRight = false;
 
@@ -28,7 +28,7 @@ $("document").ready(function () {
 
   // Paddle constructor
   function Paddle() {
-    this.width = 75;
+    this.width = 100; //75
     this.height = 15;
     this.x = board.width / 2 - (this.width / 2);
     this.y = 480;
@@ -42,12 +42,13 @@ $("document").ready(function () {
   };
 
   // Ball constructor
-  function Ball() {
+  function Ball(speedX, speedY) {
     this.x = board.width / 2;
     this.y = 160;
     this.radius = 10;
-    this.speedX = -2;
-    this.speedY = 2;
+    this.multiplier = 1.5;
+    this.speedX = speedX * this.multiplier;
+    this.speedY = speedY * this.multiplier;
     this.speedStatus = true;
     this.draw = function () {
       ctx.fillStyle = "grey";
@@ -66,7 +67,7 @@ $("document").ready(function () {
     this.height = 15; // 15
     this.health = health;
     this.draw = function () {
-      ctx.strokeRect(this.x-1, this.y-1, this.width + 2, this.height + 2);
+      ctx.strokeRect(this.x - 1, this.y - 1, this.width + 2, this.height + 2);
       switch (this.health) {
         case 1: ctx.fillStyle = "green";
           var my_gradient = ctx.createLinearGradient(this.x, this.y, this.x, this.y + this.height);
@@ -89,6 +90,7 @@ $("document").ready(function () {
       }
       ctx.fillRect(this.x, this.y, this.width, this.height);
     }
+    blockArray.push(this);
   };
 
   var blockArray = [];
@@ -99,7 +101,7 @@ $("document").ready(function () {
       for (var i = 0; i < 7; i++) { // 7 wide
         var health = Math.floor(Math.random() * 3 + 1); // 1, 2, 3
         var block = new Block(x, 25 * j, health);
-        blockArray.push(block);
+        // blockArray.push(block);
         x = x + 50;
       }
     }
@@ -124,9 +126,10 @@ $("document").ready(function () {
     ctx.fillStyle = "white";
     ctx.fillRect(0, 0, board.width, board.height);
     paddle = new Paddle(); // update global var
-    ball = new Ball(); // update global var 
+    ball = new Ball(2, 2); // update global var 
+    // ball2 = new Ball(1, 4); // update global var 
     framerate = 0; // update global var
-    console.table(ballArray);
+    // console.table(ballArray);
     requestAnimationFrame(updateCanvas)
   };
 
@@ -147,7 +150,7 @@ $("document").ready(function () {
     // balls collission
     ballArray.forEach(function (ball) {
       // hitting left / right border
-      if (ball.x + ball.radius >= board.width || ball.x - ball.radius <= board.x) { ball.speedX *= -1 };
+      if (ball.x + ball.radius > board.width || ball.x - ball.radius < board.x) { ball.speedX *= -1 };
       // hitting top  border
       if (ball.y - ball.radius <= board.y) { ball.speedY *= -1 };
       // hitting paddle
@@ -156,35 +159,51 @@ $("document").ready(function () {
         && ball.x - ball.radius >= paddle.x - (ball.radius * 2)
         && ball.x + ball.radius <= paddle.x + paddle.width + (ball.radius * 2)
       ) {
-        ball.speedY *= -1;
+        var diff = Math.abs(ball.x - (paddle.x + paddle.width / 2));
+        var paddleXx = (paddle.x + paddle.width / 2);
+        var test = Math.abs(paddleXx - ball.x);
+        console.log("test x ball - paddle mid = " + test);
+        var test2 = test / (paddle.width / 2);
+        console.log("test2 = " + test2);
+        // ball.speedY *= -1;
+        if (ball.x > paddle.x + (paddle.width / 2)) { // right
+          // ball.speedX = 2 * ball.multiplier;
+          ball.speedX = (0.2 + (test2 * 2.2)) * ball.multiplier;
+          ball.speedY = (-4 + (test2 * 2.2)) * ball.multiplier;
+          
+        } else { //left  
+          ball.speedX = -0.2 - (test2 * 2.2) * ball.multiplier;
+          ball.speedY = (-4 + (test2 * 2.2)) * ball.multiplier;
+        };
+        console.table(ball);
         // ball.speedY *= -1 * (((ball.x - paddle.x) / paddle.width) * 0.2 + 0.25)
       };
       // hitting blocks
       blockArray.forEach(function (block) {
-        if (RectCircleColliding(ball, block) && ball.speedStatus == true) {
+        if (rectCircleColliding(ball, block) && ball.speedStatus == true) {
           explodeBlock(block);
           if (ball.x - ball.radius >= block.x + block.width - 5 || ball.x + ball.radius <= block.x + 5) {
-            ball.speedX *= -1; //hit detected on left/right...change left/right direction
-            console.log("hit left / right");
+            ball.speedX *= -1; //hit from left/right
+            // console.log("hit left / right");
           } else {
-            ball.speedY *= -1; //hit detected on top/bottom...change top/bottom direction
-            console.log("hit top / bottom");
+            ball.speedY *= -1; //hit from top/bottom
+            // console.log("hit top / bottom");
           };
           // speedStatus is needed for when ball hits a block on a corner. Otherwise it will trigger many speedX *= -1 events
           ball.speedStatus = false;
           setTimeout(function () {
             ball.speedStatus = true;
             console.log("reset")
-          }, 20);
+          }, 48);
         }
 
       });
 
+      // move ball
+      ball.x += ball.speedX;
+      ball.y += ball.speedY;
+      ball.draw();
     });
-    // move ball
-    ball.x += ball.speedX;
-    ball.y += ball.speedY;
-    ball.draw();
 
 
     requestAnimationFrame(updateCanvas);
@@ -192,7 +211,7 @@ $("document").ready(function () {
 
   // COLLISION
   // return true if the rectangle and circle are colliding
-  function RectCircleColliding(ball, block) {
+  function rectCircleColliding(ball, block) {
     var distX = Math.abs(ball.x - block.x - block.width / 2);
     var distY = Math.abs(ball.y - block.y - block.height / 2);
 
@@ -211,9 +230,9 @@ $("document").ready(function () {
   // ----------------------
   // Explode block when hit
   function explodeBlock(block) {
-    console.table(block);
+    // console.table(block);
     block.health -= 1;
-    console.table(block);
+    // console.table(block);
     if (block.health == 0) {
       blockArray.splice(blockArray.indexOf(block), 1);
       // animate explosion confetti
@@ -252,12 +271,10 @@ $("document").ready(function () {
     if (e.key == "ArrowRight") { goRight = false };
   });
 
-  function move() {
+  function move() { // change to paddle prototype?? // <--------------------------------
     // console.log("left is " + goLeft + "/ right is " + goRight);
     if (goLeft) { paddle.x = (paddle.x <= 5 ? 5 : paddle.x - paddle.speed) };
     if (goRight) { paddle.x = (paddle.x + paddle.width >= board.width - 5 ? board.width - 5 - paddle.width : paddle.x + paddle.speed) };
   };
-
-
 
 });
