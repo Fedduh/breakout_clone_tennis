@@ -8,6 +8,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" type="text/css" media="screen" href="main.css">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  <script src="js/constructors.js"></script>
   <script src="main.js"></script>
 </head>
 
@@ -15,10 +16,14 @@
   <div class="container">
     <div id="explanation">
       <h1>Breakout</h1>
-      <button id="startButton">Start game</button>
+      <button id="startButton">New game</button>
     </div>
     <div id="board">
-      <h2>Score : <span id="points">0</span></h2>
+      <div class="container-points">
+        <h2>Score : <span id="points">0</span></h2>
+        <h2>Level : <span id="levels">1</span></h2> 
+        <h2>lives : <span id="lives">&hearts;&hearts;&hearts;</span></h2>
+      </div>
       <canvas id="canvasBoard" width="400" height="0"></canvas>
     </div>
   </div>

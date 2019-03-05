@@ -47,3 +47,36 @@ ball.speedY = -2 * ball.multiplier
 } else { //left 
 ball.speedX = -2 * ball.multiplier;
 ball.speedY = -2 * ball.multiplier;
+
+////////////////
+// var audio = new Audio();
+// audio.src = "sounds/108934__soundcollectah__bottle-ping.aiff";
+
+
+
+  // function Sound(src) {
+  //   this.sound = document.createElement("audio");
+  //   this.sound.src = src;
+  //   this.sound.setAttribute("preload", "auto");
+  //   this.sound.setAttribute("controls", "none");
+  //   this.sound.style.display = "none";
+  //   document.body.appendChild(this.sound);
+  //   this.crossOrigin="anonymous"
+  //   this.play = function(){
+  //     this.sound.play();
+  //   }
+  //   this.stop = function(){
+  //     this.sound.pause();
+  //   }
+  // };
+
+  // var soundPaddle = new Sound("sounds/108934__soundcollectah__bottle-ping.aiff");
+  // console.log(soundPaddle);
+
+
+  //
+
+  // Paddle.prototype.move = function() { // change to paddle prototype?? // <--------------------- 
+//   if (goLeft) { paddle.x = (paddle.x <= 5 ? 5 : paddle.x - paddle.speed) };
+//   if (goRight) { paddle.x = (paddle.x + paddle.width >= board.width - 5 ? board.width - 5 - paddle.width : paddle.x + paddle.speed) };
+// };
