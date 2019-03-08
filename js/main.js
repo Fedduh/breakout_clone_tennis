@@ -2,12 +2,35 @@
 
 // == GLOBAL VAR DECLARATION - START == //
 var canvas, ctx; // canvas
-var board, paddle, ballArray, blockArray, powerupArray; // assets
+var board, paddle, ballArray, blockArray, powerupArray, shadowArray, explodeArray; // assets
 // var ball, ball2, score;
-var framerate,  run, freezegame; // game logic
+var framerate, run, freezegame; // game logic
 var goLeft = false; // event listeners
 var goRight = false;
 // == GLOBAL VAR DECLARATION - END == //
+
+
+// == SOUNDS - START == //
+// paddle bounce
+var soundPaddle = new Audio();
+soundPaddle.src = "sounds/paddle_bounce.wav";
+// soundPaddle.volume = 0.6;
+// block hit
+var soundBlock1 = new Audio();
+soundBlock1.src = "sounds/tennis1.wav";
+var soundBlock2 = new Audio();
+soundBlock2.src = "sounds/tennis2.wav";
+var soundBlock3 = new Audio();
+soundBlock3.src = "sounds/tennis3.wav";
+var soundBlock4 = new Audio();
+soundBlock4.src = "sounds/tennis4.wav";
+// next round
+var soundWon = new Audio();
+soundWon.src = "sounds/applaud.wav";
+// out
+var soundOut = new Audio(); 
+soundOut.src = "sounds/tennis_out.wav";
+// == SOUNDS - END == //
 
 
 // == DOM READY - START == //
@@ -20,6 +43,9 @@ $("document").ready(function () {
   $("#startButton").on("click", function (e) {
     startGame();
   });
+
+  // => show tennis field
+  setupGame();
 
   // => Key events - smooth moving (no delay)  
   addEventListener("keydown", function (e) {
@@ -40,35 +66,40 @@ $("document").ready(function () {
 
 // == BEGIN GAME - START == //
 function startGame() {
+  setupGame();
+  setTimeout(() => {
+    ballArray = [];
+    new Ball();
+  }, 1000);
+  requestAnimationFrame(updateCanvas);
+};
+
+function setupGame() {
   cancelAnimationFrame(run); // stop current updateAnimationFrame (if a game was already active) 
   framerate = 0; // update global var 
   freezegame = false;
   // score = 0;
   board = new Board(); // update global var 
-  ctx.fillStyle = "white";
-  ctx.fillRect(0, 0, board.width, board.height);
+  board.draw();
   paddle = new Paddle(); // update global var
-  ballArray = []; 
-  // new Ball();  
-  setTimeout(() => {
-    ballArray = [];
-    new Ball();
-  }, 1000);
+  ballArray = [];
+  shadowArray = [];
   powerupArray = [];
+  explodeArray = [];
   board.createBlocks();
   board.drawScore();
-  board.drawlives();
-  requestAnimationFrame(updateCanvas);
+  board.drawLives();
+  board.drawLevels();
 };
 // == BEGIN GAME - END == //
 
 
+//-----------------------------//
 // == UPDATE CANVAS - START == //
 function updateCanvas() {
   framerate++;
   // => clear  
-  ctx.fillStyle = "white";
-  ctx.fillRect(0, 0, board.width, board.height);
+  board.draw();
   // => paddle
   paddle.move();
   paddle.draw();
@@ -82,10 +113,13 @@ function updateCanvas() {
     powerup.draw();
   });
   // => Shadow(s)
-  shadowArray.forEach(function(shadow) {
+  shadowArray.forEach(function (shadow) {
     shadow.draw();
-  })
-
+  });
+  // => Explosions
+  explodeArray.forEach(function (explode) {
+    explode.draw();
+  });
   // => COLLISION
   // balls collission
   ballArray.forEach(function (ball) {
@@ -100,9 +134,9 @@ function updateCanvas() {
       ball.speedX *= -1
     };
     // hitting top  border
-    if (ball.y - ball.radius <= board.y) { 
+    if (ball.y - ball.radius <= board.y) {
       ball.y = board.y + 1 + ball.radius;
-      ball.speedY *= -1 
+      ball.speedY *= -1
     };
     // hitting bottom (remove ball / game over)
     if (ball.y - ball.radius >= board.height) {
@@ -116,7 +150,12 @@ function updateCanvas() {
       && ball.x - ball.radius >= paddle.x - (ball.radius * 2)
       && ball.x + ball.radius <= paddle.x + paddle.width + (ball.radius * 2)
     ) {
-      // soundPaddle.play();
+      // little bounce effect
+      paddle.y += 5;
+      setTimeout(function () {
+        paddle.y -= 5;
+      }, 100);
+      audioPlay(soundPaddle);
       // Variables for setting the paddle physics
       var paddleMidX = paddle.x + paddle.width / 2;
       var diffPaddleBall = Math.abs(paddleMidX - ball.x);
@@ -135,6 +174,7 @@ function updateCanvas() {
     // => hitting blocks
     blockArray.forEach(function (block) {
       if (rectCircleColliding(ball, block) && ball.speedStatus == true) {
+        randomSoundHit();
         block.explodeBlock();
         board.score++;
         board.drawScore();
@@ -167,19 +207,17 @@ function updateCanvas() {
             if (getMaxY() < 300) {
               powerup.removeRandomPowerUp();
               clearInterval(interval);
-            }
+            };
           }, 200);
-        }, 2000);
-      }
+        }, 10000);
+      };
     });
 
-    // => move ball(s) - still in ballArray loop  
-    // if(framerate % 1 == 0) {
+    // => move ball(s) + shadows - still in ballArray loop   
     new BallShadow(ball.x, ball.y, ball.radius);
-    // }
     ball.x += ball.speedX;
     ball.y += ball.speedY;
-    ball.draw(); 
+    ball.draw();
   });
 
   if (!freezegame) {
@@ -187,13 +225,15 @@ function updateCanvas() {
   }
 };
 // == UPDATE CANVAS - END == //
+//---------------------------//
 
-function getMaxY() {
-  // Max Y of ballArray
-  return ballArray.reduce((max, p) => p.y > max ? p.y : max, 0);
-}
 
 // == FUNCTIONS - START == //
+// => Max Y of ballArray. If Y > max then y else max. Start at max = 0
+function getMaxY() {
+  return ballArray.reduce((max, ball) => ball.y > max ? ball.y : max, 0);
+};
+
 // => return true if the rectangle and circle are colliding
 function rectCircleColliding(ball, block) {
   // calc distance between center ball and center block
@@ -211,10 +251,27 @@ function rectCircleColliding(ball, block) {
   return (dx * dx + dy * dy <= (ball.radius * ball.radius));
 };
 
+// => Sounds. Clone and play (allows overlapping sound effects)
+function audioPlay(audioName) {
+  // the true parameter will tell the function to make a deep clone (cloning attributes as well) 
+  var clone = audioName.cloneNode(true);
+  clone.play();
+};
 
-
-// ------------------
-// Confetti animation
-function confetti(blockX, blockY) {
-  //
-}
+function randomSoundHit() {
+  var randomNr = Math.floor(Math.random() * 4 + 1);
+  switch (randomNr) {
+    case 1:
+      audioPlay(soundBlock1);
+      break;
+    case 2:
+      audioPlay(soundBlock2);
+      break;
+    case 3:
+      audioPlay(soundBlock3);
+      break;
+    case 4:
+      audioPlay(soundBlock4);
+      break;
+  };
+};

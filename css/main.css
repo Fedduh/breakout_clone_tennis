@@ -1,0 +1,57 @@
+body{
+  /* background-image: url(images/crowd.png); */
+  background-color: #1171378a; 
+  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif; 
+}
+
+
+#explanation {
+  padding: 30px; 
+  background-color: white;
+  border: 3px solid #25af5d8a;
+  border-radius: 30px;
+  box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
+  height: 130px;
+  margin: auto 0;
+  text-align: center;
+}
+
+#board {
+  margin-left: 20px;
+}
+
+#canvasBoard {
+  border: 2px solid white; 
+  border-radius: 10px; 
+  /* background-color: rgba(54, 219, 248, 0.692); */
+}
+
+#lives{
+  color: #E8E001;  
+  font-size: 150%;
+}
+
+.container {
+  margin: 0 auto;
+  margin-top: 50px;
+  width: 900px;
+  display: flex;
+  justify-content: center;
+  /* border: 1px solid orange; */
+}
+
+.container-points {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  height: 100px;
+}
+
+#startButton{
+  font-size: 120%;
+  padding: 10px; 
+  background: rgba(18, 252, 30, 0.774);
+  border: 3px solid #1171378a;
+  border-radius: 10px; 
+  box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
+}
