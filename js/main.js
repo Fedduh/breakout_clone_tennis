@@ -44,6 +44,15 @@ $("document").ready(function () {
     startGame();
   });
 
+  // => Demo start trigger
+  $("#startDemo").on("click", function (e) {
+    startGame();
+    setInterval(function() {
+      paddle.width = board.width - 20;
+      paddle.x = 10;
+    }, 200) // paddle powerdown decreases size by 50%, so interval
+  });
+
   // => show tennis field
   setupGame();
 
@@ -204,7 +213,7 @@ function updateCanvas() {
         // clear this powerup after 10 sec and when balls are at top half (condition checked every 200 ms)
         setTimeout(function () {
           var interval = setInterval(function () {
-            if (getMaxY() < 300) {
+            if (getMaxY() < board.height) {
               powerup.removeRandomPowerUp();
               clearInterval(interval);
             };

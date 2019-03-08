@@ -86,7 +86,7 @@ Board.prototype.gameOver = function () {
     // create new ball
     setTimeout(function () {
       new Ball();
-    }, 500);
+    }, 1500);
   };
   if (board.lives == 0) {
     freezegame = true;
@@ -180,7 +180,6 @@ BallShadow.prototype.draw = function () {
   } else {
     this.radius = this.origRadius - this.decrease;
     ctx.fillStyle = "rgba(255,255,255, 0.3)";
-    // ctx.fillStyle = "rgba(54, 219, 248, 0.3)"; // blue
     ctx.beginPath();
     ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
     ctx.fill();

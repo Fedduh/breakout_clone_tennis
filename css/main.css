@@ -47,11 +47,20 @@ body{
   height: 100px;
 }
 
-#startButton{
+button {
+  display: inline-block;
   font-size: 120%;
   padding: 10px; 
-  background: rgba(18, 252, 30, 0.774);
-  border: 3px solid #1171378a;
   border-radius: 10px; 
   box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
+}
+
+#startButton{
+  background: rgba(18, 252, 30, 0.774);
+  border: 3px solid #1171378a;
+}
+
+#startDemo{
+  background: rgba(252, 151, 18, 0.774);
+  border: 3px solid #713f118a;
 }
