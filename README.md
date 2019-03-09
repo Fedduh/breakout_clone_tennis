@@ -17,9 +17,9 @@ The **goal** of the game is to clear all the blocks. Blocks have different stren
 - [x]  Randomness
 - [x]  Sound
 
-# Still to do
-- [] Collide ball with other ball(s)
-- [] High scores
+## Still to do
+- [ ] Collide ball with other ball(s)
+- [ ] High scores
 
 ![preview game](readme/overview-game-small.gif)
 
