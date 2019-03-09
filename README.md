@@ -16,5 +16,5 @@ The **goal** of the game is to clear all the blocks. Blocks have different stren
 - Sound
 
 
-
+![](readme/overview-game.gif){:height="50%" width="50%"}
 
