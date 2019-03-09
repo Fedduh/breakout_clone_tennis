@@ -2,11 +2,11 @@
 
 // == GLOBAL VAR DECLARATION - START == //
 var canvas, ctx; // canvas
-var board, paddle, ballArray, blockArray, powerupArray, shadowArray, explodeArray; // assets
-// var ball, ball2, score;
+var board, paddle, ballArray, blockArray, powerupArray, shadowArray, explodeArray; // assets 
 var framerate, run, freezegame; // game logic
 var goLeft = false; // event listeners
 var goRight = false;
+var demoInterval; // for demo
 // == GLOBAL VAR DECLARATION - END == //
 
 
@@ -42,18 +42,23 @@ $("document").ready(function () {
   // => Start game trigger
   $("#startButton").on("click", function (e) {
     startGame();
+    setTimeout(function() {
+      // just for the demo purpose
+      if(demoInterval) {clearInterval(demoInterval)};
+      paddle.width = 80; 
+    })
   });
 
   // => Demo start trigger
   $("#startDemo").on("click", function (e) {
     startGame();
-    setInterval(function() {
+    demoInterval = setInterval(function() {
       paddle.width = board.width - 20;
       paddle.x = 10;
     }, 200) // paddle powerdown decreases size by 50%, so interval
   });
 
-  // => show tennis field
+  // => show tennis field when loading page
   setupGame();
 
   // => Key events - smooth moving (no delay)  
@@ -75,8 +80,8 @@ $("document").ready(function () {
 
 // == BEGIN GAME - START == //
 function startGame() {
-  setupGame();
-  setTimeout(() => {
+  setupGame(); 
+  var ballTimeout = setTimeout(() => {
     ballArray = [];
     new Ball();
   }, 1000);
@@ -202,6 +207,9 @@ function updateCanvas() {
 
     // => hitting powerups
     powerupArray.forEach(function (powerup) {
+      // remove from array if out of board
+      if(powerup.y > board.height) {powerupArray.splice(powerupArray.indexOf(powerup), 1)};
+      // check colission with paddle
       if (powerup.y + powerup.height >= paddle.y
         && powerup.y + powerup.height <= paddle.y + paddle.height + powerup.height
         && powerup.x >= paddle.x - powerup.width

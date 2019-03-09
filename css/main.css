@@ -1,9 +1,7 @@
-body{
-  /* background-image: url(images/crowd.png); */
+body { 
   background-color: #1171378a; 
   font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif; 
 }
-
 
 #explanation {
   padding: 30px; 
@@ -22,11 +20,10 @@ body{
 
 #canvasBoard {
   border: 2px solid white; 
-  border-radius: 10px; 
-  /* background-color: rgba(54, 219, 248, 0.692); */
+  border-radius: 10px;  
 }
 
-#lives{
+#lives {
   color: #E8E001;  
   font-size: 150%;
 }
@@ -36,8 +33,7 @@ body{
   margin-top: 50px;
   width: 900px;
   display: flex;
-  justify-content: center;
-  /* border: 1px solid orange; */
+  justify-content: center; 
 }
 
 .container-points {
@@ -47,6 +43,7 @@ body{
   height: 100px;
 }
 
+/* Buttons */
 button {
   display: inline-block;
   font-size: 120%;
@@ -55,12 +52,12 @@ button {
   box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
 }
 
-#startButton{
+#startButton {
   background: rgba(18, 252, 30, 0.774);
   border: 3px solid #1171378a;
 }
 
-#startDemo{
+#startDemo {
   background: rgba(252, 151, 18, 0.774);
   border: 3px solid #713f118a;
 }

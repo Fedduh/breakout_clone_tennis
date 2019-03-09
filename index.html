@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>Breakout!</title>
+  <title>Breakout - Tennis Court</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" type="text/css" media="screen" href="css/main.css">
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
@@ -14,15 +14,17 @@
 
 <body>
   <div class="container">
+    <!-- Explanation child -->
     <div id="explanation">
       <h2>Breakout - Tennis Court</h2>
       <button id="startButton">New game</button>
       <button id="startDemo">Demo game</button>
     </div>
+    <!-- Gameboard child -->
     <div id="board">
       <div class="container-points">
         <h2>Score : <span id="points">0</span></h2>
-        <h2>Level : <span id="levels">1</span></h2> 
+        <h2>Level : <span id="levels">1</span></h2>
         <h2>lives : <span id="lives">&#9679;&#9679;&#9679;</span></h2>
       </div>
       <canvas id="canvasBoard" width="400" height="500"></canvas>

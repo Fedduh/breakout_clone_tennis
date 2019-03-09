@@ -1,6 +1,8 @@
 "use strict";
 
-// == BOARD == //
+// ------------------ //
+// == BOARD object == //
+// ------------------ //
 function Board() {
   this.x = 0;
   this.y = 0;
@@ -17,7 +19,7 @@ function Board() {
 Board.prototype.draw = function () {
   ctx.fillStyle = "#773E2F"; // brown
   ctx.fillRect(0, 0, board.width, board.height);
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.699)"; // white
+  ctx.strokeStyle = "rgba(255, 255, 255, 0.7)"; // white
   ctx.lineWidth = 3;
   ctx.beginPath();
   // big square
@@ -42,12 +44,11 @@ Board.prototype.draw = function () {
   ctx.lineTo(this.width / 2, this.height - 160);
   ctx.closePath();
   ctx.stroke();
-
-}
+};
 
 Board.prototype.createBlocks = function () {
   blockArray = [];
-  for (var j = 1; j < 6; j++) { // 5 high (5)
+  for (var j = 1; j < 6; j++) { // 5 high (6)
     var x = 30;
     for (var i = 1; i < 7; i++) { // 6 wide (7)
       var health = Math.floor(Math.random() * 3 + 1); // 0, 1, 2, 3 (4)
@@ -66,11 +67,11 @@ Board.prototype.drawScore = function () {
 };
 
 Board.prototype.drawLives = function () {
-  var hearts = '';
+  var livesLeft = '';
   for (var i = 1; i <= this.lives; i++) {
-    hearts += "\u25CF"; //unicode heart; 
+    livesLeft += "\u25CF"; //unicode ball; 
   };
-  $("#lives").text(hearts)
+  $("#lives").text(livesLeft)
 };
 
 Board.prototype.drawLevels = function () {
@@ -88,13 +89,14 @@ Board.prototype.gameOver = function () {
       new Ball();
     }, 1500);
   };
+  // "real" Game over (no lives left)
   if (board.lives == 0) {
     freezegame = true;
-    ctx.fillStyle = "#E8E001"; 
+    ctx.fillStyle = "#E8E001";
     ctx.beginPath();
     ctx.arc(this.width / 2, this.height / 2, this.width / 3, 0, Math.PI * 2);
-    ctx.fill(); 
-    ctx.stroke();
+    ctx.fill();
+    ctx.stroke(); // white border
     ctx.closePath();
     ctx.fillStyle = "black";
     ctx.font = "30px Arial";
@@ -106,24 +108,29 @@ Board.prototype.gameOver = function () {
 };
 
 Board.prototype.goNextLevel = function () {
-  audioPlay(soundWon);
+  this.level++;
+  // new level settings
   ballArray = [];
   powerupArray = [];
-  this.level++;
   this.drawLevels();
   board.createBlocks();
   setTimeout(function () {
     new Ball();
+    paddle.speed = 5 + board.level * 0.5;
   }, 5000);
-  $(document.body).css({"background-image": "url(images/crowd.png)"});
-  setTimeout(function() {
-    $(document.body).css({"background-image": "none"});
+  // audio + animation
+  audioPlay(soundWon);
+  $(document.body).css({ "background-image": "url(images/crowd.png)" });
+  setTimeout(function () {
+    $(document.body).css({ "background-image": "none" });
   }, 2000);
 };
 
-// == PADDLE == //
+// ------------------- //
+// == PADDLE object == //
+// ------------------- //
 function Paddle() {
-  this.width = 80; //75
+  this.width = 80;
   this.height = 15;
   this.x = board.width / 2 - (this.width / 2);
   this.y = board.height - this.height - 10;
@@ -142,7 +149,9 @@ Paddle.prototype.draw = function () {
   ctx.fillRect(this.x + 5, this.y, this.width - 10, this.height);
 };
 
-// == BALL == //
+// ----------------- //
+// == BALL object == //
+// ----------------- //
 function Ball() {
   this.x = board.width / 2;
   this.y = 160;
@@ -163,7 +172,9 @@ Ball.prototype.draw = function () {
   ctx.closePath();
 };
 
-//== BALL shadow ==//
+// ---------------------- //
+//== BALL SHADOW object ==//
+// ---------------------- //
 function BallShadow(x, y, r) {
   this.x = x;
   this.y = y;
@@ -174,12 +185,13 @@ function BallShadow(x, y, r) {
 };
 
 BallShadow.prototype.draw = function () {
+  // decrease radius every 6 frames
   this.decrease = Math.floor(this.shadowCounter / 6);
   if (this.radius - this.decrease <= 0) {
     this.remove();
   } else {
     this.radius = this.origRadius - this.decrease;
-    ctx.fillStyle = "rgba(255,255,255, 0.3)";
+    ctx.fillStyle = "rgba(255,255,255, 0.3)"; // transparant white
     ctx.beginPath();
     ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
     ctx.fill();
@@ -192,12 +204,14 @@ BallShadow.prototype.remove = function () {
   shadowArray.splice(shadowArray.indexOf(this), 1)
 };
 
-// == BLOCK == //
+// ------------------ //
+// == BLOCK boject == //
+// ------------------ //
 function Block(x, y, health, powerup) {
   this.x = x;
   this.y = y;
-  this.width = 50; // 40
-  this.height = 15; // 15
+  this.width = 50;
+  this.height = 15;
   this.health = health;
   this.powerup = powerup;
   blockArray.push(this);
@@ -229,17 +243,19 @@ Block.prototype.draw = function () {
   ctx.fillRect(this.x, this.y, this.width, this.height);
   // overlay for glass effect
   var glass_gradient = ctx.createLinearGradient(this.x, this.y, this.x, this.y + this.height / 2);
-  glass_gradient.addColorStop(0, "rgba(255,255,255,0.7)");
-  glass_gradient.addColorStop(0, "rgba(255,255,255,0.2)");
+  glass_gradient.addColorStop(0, "rgba(255,255,255,0.8)");
+  glass_gradient.addColorStop(0, "rgba(255,255,255,0.3)");
   ctx.fillStyle = glass_gradient;
   ctx.fillRect(this.x, this.y + 2, this.width - 6, this.height / 2);
 };
 
 Block.prototype.explodeBlock = function () {
+  // block got hit
   this.health -= 1;
+  // if block is broken
   if (this.health == 0) {
-    // animate explosion confetti
-    new Explode(this.x + this.width / 2, this.y + this.height / 2); //////////
+    // create smoke animation (explode)
+    new Explode(this.x + this.width / 2, this.y + this.height / 2);
     // check powerup
     if (this.powerup) {
       new Powerup(this.x, this.y, this.width, this.height); // give powerup same size as block destroyed
@@ -249,11 +265,13 @@ Block.prototype.explodeBlock = function () {
     // check if there are no blocks left (next level)
     if (blockArray.length == 0) {
       board.goNextLevel();
-    }
+    };
   };
 };
 
-// == POWER UP == //
+// --------------------- //
+// == POWER UP boject == //
+// --------------------- //
 function Powerup(x, y, w, h) {
   this.x = x;
   this.y = y;
@@ -264,7 +282,9 @@ function Powerup(x, y, w, h) {
   powerupArray.push(this);
 };
 
-Powerup.prototype.move = function () { this.y += this.speedY };
+Powerup.prototype.move = function () {
+  this.y += this.speedY
+};
 
 Powerup.prototype.draw = function () {
   ctx.strokeStyle = "white";
@@ -277,8 +297,7 @@ Powerup.prototype.draw = function () {
   ctx.fillText("!", this.x + this.width / 2, this.y + 13);
 };
 
-Powerup.prototype.addRandomPowerUp = function () {
-  console.log(this.powerupType);
+Powerup.prototype.addRandomPowerUp = function () { 
   switch (this.powerupType) {
     case 1: // increase paddle width (max half of the board)
       paddle.width = Math.min(paddle.width *= 1.5, board.width / 2);
@@ -324,10 +343,12 @@ Powerup.prototype.removeRandomPowerUp = function () {
         }
       });
       break;
-  }
+  };
 };
 
-// == EXPLODE animation == //
+// -------------------- //
+// == EXPLODE object == //
+// -------------------- //
 function Explode(x, y) {
   this.x = x;
   this.y = y;
@@ -346,7 +367,7 @@ Explode.prototype.draw = function () {
   if (this.radius - this.decrease <= 0) {
     this.remove();
   } else {
-    // drawing
+    // drawing (4 random circles)
     this.radius = this.origRadius - this.decrease;
     ctx.fillStyle = "grey";
     ctx.beginPath();
