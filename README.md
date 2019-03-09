@@ -3,6 +3,8 @@ A Breakout (a.k.a. Arkanoid) clone made from scratch with a tennis theme.
 
 [Play the game on Heroku](https://breakoutclone.herokuapp.com/)
 
+![preview game](readme/overview-game-small.gif)
+
 ## Main functionality
 - [x]  Breaking blocks
 - [x]  Paddle movement
@@ -21,5 +23,5 @@ The **goal** of the game is to clear all the blocks. Blocks have different stren
 - [ ] Collide ball with other ball(s)
 - [ ] High scores
 
-![preview game](readme/overview-game-small.gif)
+
 
